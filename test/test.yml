@@ -1,0 +1,6 @@
+---
+- hosts: master
+  remote_user: root
+  gather_facts: no
+  roles:
+    - k8s-demo-installer

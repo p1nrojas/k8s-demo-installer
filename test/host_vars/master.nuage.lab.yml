@@ -1,0 +1,17 @@
+hypervisor: 192.168.1.113
+interfaces:
+  mgmt:
+    linux_bridge: bridge0
+    ip: 10.10.10.101
+    netmask_prefix: 24
+  control:
+    linux_bridge: bridge0
+    ip: 10.20.10.101
+    netmask_prefix: 24
+dns:
+  servers:
+    - 10.10.10.2
+  domain: nuage.lab
+ntp_servers:
+  - 10.10.10.2
+vsd_fqdn: "vsd01.nuage.lab"

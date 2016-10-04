@@ -1,0 +1,10 @@
+---
+# defaults file for common
+domain_type: kvm
+list_of_nodes: "{{ groups['nodes'] }}"
+images_path: "/var/lib/libvirt/images/"
+image_qcow2: "centos.qcow2"
+image_partition: "/dev/sda1"
+vsd:
+  username: "admin"
+  password: "admin"

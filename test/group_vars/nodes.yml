@@ -1,0 +1,14 @@
+interfaces:
+  mgmt:
+    linux_bridge: bridge0
+    netmask_prefix: 24
+  control:
+    linux_bridge: bridge0
+    netmask_prefix: 24
+dns:
+  servers:
+    - 10.10.10.2
+  domain: nuage.lab
+ntp_servers:
+  - 10.10.10.2
+vsd_fqdn: "vsd01.nuage.lab"
