@@ -1,0 +1,147 @@
+---
+# tasks file for k8s cluster
+- name: Pull facts on hypervisor
+  action: setup
+  delegate_to: "{{ hypervisor }}"
+
+- name: Install additional packages to modify qcow image and run as VM - RedHat Host
+  yum: name={{ item }} state=present
+  with_items:
+   - qemu-kvm
+   - libvirt
+   - bridge-utils
+   - libguestfs-tools
+   - libvirt-python
+   - genisoimage
+  when: ansible_os_family == "RedHat"
+  delegate_to: "{{ hypervisor }}"
+
+- name: Install additional packages to modify qcow image and run as VM - Debian Host
+  apt: name={{ item }} state=present update_cache=yes cache_valid_time=3600
+  with_items:
+   - qemu-kvm
+   - libvirt-bin
+   - bridge-utils
+   - libguestfs-tools
+   - python-libvirt
+   - genisoimage
+  when: ansible_os_family == "Debian"
+  delegate_to: "{{ hypervisor }}"
+
+- name: List the Virtual Machine
+  virt: command=list_vms
+  register: virt_vms
+  delegate_to: "{{ hypervisor }}"
+
+- fail: msg="The VM {{ inventory_hostname }} is already defined on this hypervisor."
+  when: inventory_hostname in virt_vms.list_vms
+
+- name: Include OS-specific variables.
+  include_vars: "{{ ansible_os_family }}.yml"
+
+# Copy qcow2 image to target host
+- name: Creates k8s master directory
+  file: path={{ images_path }}{{ inventory_hostname }} state=directory owner={{ libvirt.user }} group={{ libvirt.group }}
+  delegate_to: "{{ hypervisor }}"
+
+- name: Copy over qcow2 image
+  shell: rsync --checksum --rsh 'ssh -S none -o StrictHostKeyChecking=no'  {{ image_qcow2 }} {{ hypervisor }}:{{ images_path }}{{ inventory_hostname }}/{{ inventory_hostname }}.qcow2 
+  delegate_to: "{{ hypervisor }}"
+
+- name: Change user and group to VM image
+  file: path={{ images_path }}{{ inventory_hostname }}/{{ inventory_hostname }}.qcow2 owner={{ libvirt.user }} group={{ libvirt.group }}
+  delegate_to: "{{ hypervisor }}"
+
+# Resize Image
+- name: Copy qcow2 image for resizing again
+  shell: rsync --checksum --rsh 'ssh -S none -o StrictHostKeyChecking=no'  {{ image_qcow2 }} {{ hypervisor }}:{{ image_qcow2 }} 
+  delegate_to: "{{ hypervisor }}"
+
+- name: Change user and group of the file to image base file
+  file: path={{ image_qcow2 }} owner={{ libvirt.user }} group={{ libvirt.group }}
+  delegate_to: "{{ hypervisor }}"
+
+- name: Preallocate image thru qemu-img
+  shell: qemu-img create -f qcow2 -o preallocation=metadata {{ images_path }}{{ inventory_hostname }}/{{ inventory_hostname }}.qcow2  {{ disk_GB }}G
+  delegate_to: "{{ hypervisor }}"
+
+- name: Resize image thru virt-resize
+  shell: virt-resize --expand /dev/sda1 {{ image_qcow2 }}  {{ images_path }}{{ inventory_hostname }}/{{ inventory_hostname }}.qcow2
+  delegate_to: "{{ hypervisor }}"
+
+# Configure master
+- name: Setup temporary configuration files
+  template: src={{ item }}.j2 backup=no dest={{ images_path }}{{ inventory_hostname }}/{{ item }}
+  delegate_to: "{{ hypervisor }}"
+  with_items:
+    - text1
+    - text2
+
+- name: Copy temporary configuration files to the image
+  shell: guestfish --rw -a {{ images_path }}{{ inventory_hostname }}/{{ inventory_hostname }}.qcow2 -m {{ image_partition }} copy-in {{ images_path }}{{ inventory_hostname }}/{{ item }} /
+  delegate_to: "{{ hypervisor }}"
+  with_items:
+    - text1
+    - text2
+
+- name: Remove temporary configuration files
+  file: path={{ images_path }}{{ inventory_hostname }}/{{ item }} state=absent
+  delegate_to: "{{ hypervisor }}"
+  with_items:
+    - text1
+    - text2
+
+
+# Cloud-init files section... Important: don't change the names of the files!
+- name: Copy temporary cloud_init files to image folder
+  template: src={{ item }}.j2 backup=no dest={{ images_path }}{{ inventory_hostname }}/{{ item }} 
+  delegate_to: "{{ hypervisor }}"
+  with_items:
+    - user-data
+    - meta-data
+
+- name: Create cdrom ISO with cloud_init user and metada
+  shell: pushd {{ images_path }}{{ inventory_hostname }} && genisoimage -output {{ inventory_hostname }}.{{ cdrom_iso }}  -volid cidata -joliet -r user-data meta-data &>> {{ inventory_hostname }}.log && popd
+  delegate_to: "{{ hypervisor }}"
+
+
+# Define guest VM
+- name: Get a list of VMs
+  virt: command=list_vms
+  register: virt_vms
+  delegate_to: "{{ hypervisor }}"
+
+- name: Copy temporary xml to image folder
+  template: src=nodes.xml.j2 backup=no dest={{ images_path }}{{ inventory_hostname }}/nodes.xml
+  delegate_to: "{{ hypervisor }}"
+
+- name: Define guest VM
+  virt: name={{ inventory_hostname }}
+        command=define
+        xml="{{ lookup('template', 'nodes.xml.j2') }}"
+  when: inventory_hostname not in virt_vms.list_vms
+  delegate_to: "{{ hypervisor }}"
+
+# Start VM
+- name: Start guest VM
+  virt: name={{ inventory_hostname }} state=running
+  delegate_to: "{{ hypervisor }}"
+
+# Assert that VM is running
+- name: get guest info
+  virt: command=info
+  register: virt_info
+  delegate_to: "{{ hypervisor }}"
+
+- assert: { that: "virt_info[inventory_hostname]['state'] == 'running'" }
+  delegate_to: "{{ hypervisor }}"
+
+- name: Check if ssh access is active
+  local_action: wait_for port=22 host="{{ ansible_ssh_host | default(inventory_hostname) }}" search_regex=OpenSSH delay=30
+  delegate_to: "{{ hypervisor }}"
+
+#remove cloud_init media iso image
+- name: Remove cdrom media
+  shell: pushd {{ images_path }}{{ inventory_hostname }} && virsh change-media {{ inventory_hostname }} hda --eject --config >> {{ inventory_hostname }}.log && popd
+  delegate_to: "{{ hypervisor }}"
+

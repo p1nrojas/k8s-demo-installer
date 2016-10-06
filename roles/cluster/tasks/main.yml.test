@@ -1,0 +1,8 @@
+# Cloud-init files section... Important: don't change the names of the files!
+- name: Copy temporary cloud_init files to image folder
+  template: src={{ item }}.j2 backup=no dest=/root/p1nrojas/k8s-demo-installer/{{ item }} 
+  delegate_to: "{{ hypervisor }}"
+  with_items:
+    - user-data
+    - meta-data
+
