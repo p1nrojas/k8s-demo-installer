@@ -74,8 +74,9 @@ ssh_rsa:
   key:
   - "ssh-rsa XOXOXOXOXOXOXOXOOXOXOXOOXOXOXOXOXOXOXOXOOXOXOXOXOXOXOXOXOXOXOXOXXXOjQng3P3e/C5ezpPqnvLZO2jq2ivdVXvjKNisIop3CzymRD7tf4wglDiREggSt2fPXXhIMG7AIbQuvn88XZ+PCa3Y74L8G9u8WWJMZzY5fU4I7UP3SZb2FVxLXC7iTukYM8QRMhbwkAVzZWOj81jGRZI/9b/zU+jm2IFPPyTNdMbyXlfQ9qMbWA11PxdP4G5AcMcHmGKT9 root@box01.nuage.lab"
   - "ssh-rsa AAAAB3NzaC1ycB8K3VUXOXOXOXOXOXOXOXOXOXOXOXOXOXOXOOXOXOXOXOXOXvfrrGg9fg8som/S9bt1sdRUUHuHkgfm9ZRIlG8ATS15ZOmfHrvT4KfRcY9NbiR7loITxLs5W7lCH5YtZ8AFp0HjzjwiaEnhVB3+O2iYeFs+2cwbNvENnKRzl7ZgEeCRYKbS+OcAOmk0+rGBx7rHTSg+MfkLtX3VgfNdUxx+ZKeAMqDkSuKSTlOZJDjIbAW0pCffp mauricio.rojas@nuagenetworks.net"
-Next, let’s go the host_vars
 ```
+Next, let’s go the host_vars
+
 Define the memory, cpu and disk values (this could be added into the group_vars i.e. for minions.yml if all would have the same capacities). Memory is in KiB. Set the IP address for the interfaces.
 ```
 # host_vars file: minions01.nuage.lab.yml
