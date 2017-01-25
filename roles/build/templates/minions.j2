@@ -1,0 +1,21 @@
+# *** WARNING ***
+# This is a generated file. Manual changes to this file
+# will be lost if reset-build or build is run
+#
+hypervisor: {{ item.hypervisor }}
+memory_KiB: {{ minion_memory }}
+vcpu_num: {{ minion_vcpu_num }}
+disk_GB: {{ minion_disk_GB }}
+gateway: {{ item.mgmt_gateway }}
+interfaces:
+  mgmt:
+    ip: {{ item.mgmt_ip }}
+  data:
+    ip: {{ item.mgmt_ip }}
+if_mgmt:
+  linux_bridge: {{ item.mgmt_bridge }}
+  mask: {{ item.mgmt_netmask }}
+if_data:
+  linux_bridge: {{ item.data_bridge }}
+  mask: {{ item.data_netmask }}
+

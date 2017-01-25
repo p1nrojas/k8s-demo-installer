@@ -1,0 +1,36 @@
+# Copy qcow2 image to target host
+- name: Creates k8s master directory
+  file: path={{ images_path }}{{ inventory_hostname }} state=directory owner={{ libvirt.user }} group={{ libvirt.group }}
+  delegate_to: "{{ hypervisor }}"
+  when: hypervisor is defined
+
+- name: Copy over qcow2 image
+  shell: rsync --checksum --rsh 'ssh -S none -o StrictHostKeyChecking=no'  {{ image_qcow2 }} {{ hypervisor }}:{{ images_path }}{{ inventory_hostname }}/{{ inventory_hostname }}.qcow2
+  delegate_to: "{{ hypervisor }}"
+  when: hypervisor is defined
+
+- name: Change user and group to VM image
+  file: path={{ images_path }}{{ inventory_hostname }}/{{ inventory_hostname }}.qcow2 owner={{ libvirt.user }} group={{ libvirt.group }}
+  delegate_to: "{{ hypervisor }}"
+  when: hypervisor is defined
+
+# Resize Image
+- name: Copy qcow2 image for resizing again
+  shell: rsync --checksum --rsh 'ssh -S none -o StrictHostKeyChecking=no'  {{ image_qcow2 }} {{ hypervisor }}:{{ image_qcow2 }}
+  delegate_to: "{{ hypervisor }}"
+  when: hypervisor is defined
+
+- name: Change user and group of the file to image base file
+  file: path={{ image_qcow2 }} owner={{ libvirt.user }} group={{ libvirt.group }}
+  delegate_to: "{{ hypervisor }}"
+  when: hypervisor is defined
+
+- name: Preallocate image thru qemu-img
+  shell: qemu-img create -f qcow2 -o preallocation=metadata {{ images_path }}{{ inventory_hostname }}/{{ inventory_hostname }}.qcow2  {{ disk_GB }}G
+  delegate_to: "{{ hypervisor }}"
+  when: hypervisor is defined
+
+- name: Resize image thru virt-resize
+  shell: virt-resize --expand /dev/sda1 {{ image_qcow2 }}  {{ images_path }}{{ inventory_hostname }}/{{ inventory_hostname }}.qcow2
+  delegate_to: "{{ hypervisor }}"
+  when: hypervisor is defined

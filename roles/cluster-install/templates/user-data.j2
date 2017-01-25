@@ -8,8 +8,12 @@ fqdn: {{ inventory_hostname }}
 runcmd:
   - [ yum, -y, remove, cloud-init ]
   - echo "GATEWAY={{ gateway }}" >> /etc/sysconfig/network
-  - echo "nameserver {{ dns.servers[0] }}" >> /etc/resolv.conf
+{% if dns is defined %}
+{% for server in dns.servers %}
+  - echo "nameserver {{ server }}" >> /etc/resolv.conf
+{% endfor %}
   - echo "domain {{ dns.domain }}" >> /etc/resolv.conf
+{% endif %}
   - /etc/init.d/network restart
   - ifdown eth0
   - ifup eth0
@@ -18,11 +22,7 @@ runcmd:
 output:
   all: ">> /var/log/cloud-init.log"
 
-chpasswd:
-  list: |
-    centos:reverse
-  expire: False
-
+{% if ssh_rsa is defined %}
 # configure interaction with ssh server
 ssh_svcname: ssh
 ssh_deletekeys: True
@@ -31,5 +31,7 @@ ssh_genkeytypes: ['rsa', 'ecdsa']
 # Install my public ssh key to the first user-defined user configured
 # in cloud.cfg in the template (which is centos for CentOS cloud images)
 ssh_authorized_keys:
-  - {{ ssh_rsa.key[0] }}
-  - {{ ssh_rsa.key[1] }}
+{% for key in ssh_rsa.key %}
+    - {{ key }}
+{% endfor %}
+{% endif %}

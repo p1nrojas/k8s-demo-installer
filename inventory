@@ -1,6 +1,0 @@
-[masters]
-master.nuage.lab
-
-[minions]
-minion01.nuage.lab
-minion02.nuage.lab

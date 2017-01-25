@@ -1,0 +1,21 @@
+# *** WARNING ***
+# This is a generated file. Manual changes to this file
+# will be lost if reset-build or build is run
+#
+hypervisor: 192.168.1.113
+memory_KiB: 8388608
+vcpu_num: 4
+disk_GB: 30
+gateway: 10.10.10.1
+interfaces:
+  mgmt:
+    ip: 10.10.10.50
+  data:
+    ip: 10.10.10.50
+if_mgmt:
+  linux_bridge: core
+  mask: 255.255.255.0
+if_data:
+  linux_bridge: core
+  mask: 255.255.255.0
+

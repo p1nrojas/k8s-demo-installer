@@ -1,9 +1,0 @@
-hypervisor: 192.168.1.113
-memory_KiB: 8388608  
-vcpu_num: 4
-disk_GB: 25
-interfaces:
-  mgmt:
-    ip: 10.10.10.101
-  data:
-    ip: 10.20.10.101

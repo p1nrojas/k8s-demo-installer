@@ -1,0 +1,59 @@
+---
+# See BUILD.md for details
+- hosts: localhost
+  gather_facts: no
+  roles:
+    - build
+  vars:
+    image_qcow2: /tmp/centos7.qcow2
+    master_memory: 8388608
+    master_vcpu_num: 4
+    master_disk_GB: 30
+    masters:
+      - { hostname: master1.sdn40r61.lab,
+          hypervisor: 192.168.1.113,
+          mgmt_bridge: core,
+          mgmt_ip: 10.10.10.50,
+          mgmt_gateway: 10.10.10.1,
+          mgmt_netmask: 255.255.255.0,
+          data_bridge: core,
+          data_ip: 10.10.20.50,
+          data_netmask: 255.255.255.0 }
+      - { hostname: master2.sdn40r61.lab,
+          hypervisor: 192.168.1.113,
+          mgmt_bridge: core,
+          mgmt_ip: 10.10.10.51,
+          mgmt_gateway: 10.10.10.1,
+          mgmt_netmask: 255.255.255.0,
+          data_bridge: core,
+          data_ip: 10.10.20.51,
+          data_netmask: 255.255.255.0 }
+    minion_memory: 16777216
+    minion_vcpu_num: 8
+    minion_disk_GB: 50
+    minions:
+      - { hostname: minion1.sdn40r61.lab,
+          hypervisor: 192.168.1.113,
+          mgmt_bridge: core,
+          mgmt_ip: 10.10.10.60,
+          mgmt_gateway: 10.10.10.1,
+          mgmt_netmask: 255.255.255.0,
+          data_bridge: core,
+          data_ip: 10.10.20.60,
+          data_netmask: 255.255.255.0 }
+      - { hostname: minion2.sdn40r61.lab,
+          hypervisor: 192.168.1.113,
+          mgmt_bridge: core,
+          mgmt_ip: 10.10.10.61,
+          mgmt_gateway: 10.10.10.1,
+          mgmt_netmask: 255.255.255.0,
+          data_bridge: core,
+          data_ip: 10.10.20.61,
+          data_netmask: 255.255.255.0 }
+    ntp_server_list:
+      - 10.10.10.2
+    dns_server_list:
+      - 10.10.10.2
+    dns_domain: sdn40r61.lab
+    ssh_key:
+    - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEBsHgMW1sLFxx2hott6vk9vFHqFF519pfdFqBfYa64CEO2+FYRH49xmM54qqxd7zmJnv0xWA8yjj7ZMvBwL/JHAfJ7CnOvYSFjcWLTnJqX+UZPjFMq5/4FyfvVn7FGwNOIyQ//R26evVjQng3P3e/C5ezpPqnvLZO2jq2ivdVXvjKNisIop3CzymRD7tf4wglDiREggSt2fPXXhIMG7AIbQuvn88XZ+PCa3Y74L8G9u8WWJMZzY5fU4I7UP3SZb2FVxLXC7iTukYM8QRMhbwkAVzZWOj81jGRZI/9b/zU+jm2IFPPyTNdMbyXlfQ9qMbWA11PxdP4G5AcMcHmGKT9 root@box01.nuage.lab"
