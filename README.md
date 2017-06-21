@@ -1,10 +1,11 @@
-#Prepare your #Kubernetes Cluster with #Ansible and #cloud_init
+# Prepare your #Kubernetes Cluster with #Ansible and #cloud_init
 
 A bit tired using bash scripts. I’ve done this small playbook based on the post: <A HREF="https://pinrojas.com/2016/08/01/resize-and-manage-cloud-init-on-kvm-with-centos-cloud-images/">“Resize and manage cloud-init on kvm with centos cloud images”</A>. to build up your k8s master/minions over KVM using a Cloud QCOW2 image. I’ve used cloud_init to configure those cloud images from a temporary cdrom iso.
 
-Check out the code at my repo: p1nrojas/k8s-demo-installer
+# Before to start, and important note
+Note: if you are looking to install kubernetes after get those server using this repo. You can try https://github.com/p1nrojas/ansible-kubeadm-nuage. This project is building a K8s cluster v1.5 thru a playbook.
 
-##Requirements
+## Requirements
 
 Check out you have enough memory and cpu to share among the instances.
 Check out your NS record are working out for the server you will create
@@ -17,7 +18,7 @@ Install libvirt, libguestfs-tools and genisoimage. I’ve added a task to check 
 
 Create one or two bridges (management and data networks) at your hypervisors
 
-##Quick Start
+## Quick Start
 
 Just execute:
 
@@ -26,7 +27,7 @@ ansible-playbook build.yml
 ansible-playbook -i hosts cluster-install.yml
 ```
 
-##Configuration
+## Configuration
 
 Check and use build.yml to create your inventory and vars files (host and group). 
 Inside build.yml you will define IPs, netmasks, gateways, ssh keys, VM's resources....
